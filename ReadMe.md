@@ -10,7 +10,7 @@ graph TD
 
     subgraph DBServer ["DBサーバ層"]
         Postgres["PostgreSQL (RDB)"]
-        Table["<b>items テーブル</b><br/>・id<br/>・name<br/>・quantity<br/>・status"]
+        Table["items テーブル<br/>・id<br/>・name<br/>・quantity<br/>・status"]
     end
 
     User -- "HTTP / HTTPS" --> Flask
