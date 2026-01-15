@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備品在庫管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin-top: 30px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .card {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .badge-qty {
+            font-size: 1.1rem;
+            min-width: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="text-center mb-4">📦 備品・在庫履歴管理システム</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card p-4 mb-4 shadow-sm">
+            <form method="POST" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label small text-muted">備品名</label>
+                    <input type="text" name="item_name" class="form-control form-control-lg" placeholder="例: マウス" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">数量</label>
+                    <input type="number" name="item_qty" class="form-control form-control-lg" value="1" min="1">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" name="action" value="in" class="btn btn-success btn-lg w-100">＋ 入庫</button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" name="action" value="out" class="btn btn-danger btn-lg w-100">－ 出庫</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5">
+                <h5 class="mb-3 text-secondary"><i class="bi bi-pie-chart-fill"></i> 現在の在庫合計</h5>
+                <div class="table-container shadow-sm">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr><th>備品名</th><th class="text-center">総数</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td><strong>{{ item.name }}</strong></td>
+                                <td class="text-center"><span class="badge bg-primary badge-qty">{{ item.total_qty }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if not items %}<p class="text-center text-muted">在庫はありません</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <h5 class="mb-3 text-secondary"><i class="bi bi-clock-history"></i> 操作履歴</h5>
+                <div class="table-container shadow-sm">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr><th>日時</th><th>備品名</th><th>数</th><th class="text-end">操作</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="text-muted small">{{ log.created_at.strftime('%m/%d %H:%M') }}</td>
+                                <td>{{ log.name }}</td>
+                                <td>
+                                    {% if log.quantity > 0 %}
+                                    <span class="text-success font-monospace">+{{ log.quantity }}</span>
+                                    {% else %}
+                                    <span class="text-danger font-monospace">{{ log.quantity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <form action="{{ url_for('delete_log', log_id=log.id) }}" method="POST" onsubmit="return confirm('この履歴を削除しますか？')">
+                                        <button type="submit" class="btn btn-link btn-sm text-secondary p-0">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
